@@ -6,6 +6,7 @@ import com.eclipsesource.json.JsonValue;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -84,6 +85,7 @@ public class Metadata {
      */
     public Metadata(Metadata other) {
         this.values = new JsonObject(other.values);
+        this.operations = new JsonArray(other.operations);
     }
 
     /**
@@ -568,5 +570,16 @@ public class Metadata {
             .add("op", op)
             .add("path", path)
             .add("value", values));
+    }
+
+    public Metadata copyPropertyPathsOnly() {
+        Metadata copy = new Metadata();
+        Iterator<JsonObject.Member> iterator = this.values.iterator();
+        iterator.forEachRemaining(m -> {
+            if(!m.getName().startsWith("$")) {
+                copy.values.add(m.getName(), m.getValue());
+            }
+        });
+        return copy;
     }
 }

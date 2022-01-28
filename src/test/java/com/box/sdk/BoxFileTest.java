@@ -935,20 +935,17 @@ public class BoxFileTest {
         //given
         BoxAPIConnection api = new BoxAPIConnection("");
         api.setRequestInterceptor(
-            new RequestInterceptor() {
-                @Override
-                public BoxAPIResponse onRequest(BoxAPIRequest request) {
-                    //then
-                    JsonObject responseJson = Json.parse(request.bodyToString()).asObject();
-                    JsonObject sharedLinkJson = responseJson.get("shared_link").asObject();
-                    assertThat(sharedLinkJson.get("vanity_name").asString(), is("myCustomName"));
-                    return new BoxJSONResponse() {
-                        @Override
-                        public String getJSON() {
-                            return "{}";
-                        }
-                    };
-                }
+            request -> {
+                //then
+                JsonObject responseJson = Json.parse(request.bodyToString()).asObject();
+                JsonObject sharedLinkJson = responseJson.get("shared_link").asObject();
+                assertThat(sharedLinkJson.get("vanity_name").asString(), is("myCustomName"));
+                return new BoxJSONResponse() {
+                    @Override
+                    public String getJSON() {
+                        return "{}";
+                    }
+                };
             }
         );
         BoxSharedLinkRequest sharedLink = new BoxSharedLinkRequest()
@@ -967,23 +964,20 @@ public class BoxFileTest {
         final AtomicInteger postCounter = new AtomicInteger(0);
         final AtomicInteger getCounter = new AtomicInteger(0);
         api.setRequestInterceptor(
-            new RequestInterceptor() {
-                @Override
-                public BoxAPIResponse onRequest(BoxAPIRequest request) {
-                    if (request.getMethod().equals("POST")) {
-                        postCounter.incrementAndGet();
-                        throw new BoxAPIException("Conflict", 409, "Conflict");
-                    }
-                    if (request.getMethod().equals("GET")) {
-                        getCounter.incrementAndGet();
-                    }
-                    return new BoxJSONResponse() {
-                        @Override
-                        public String getJSON() {
-                            return "{}";
-                        }
-                    };
+            request -> {
+                if (request.getMethod().equals("POST")) {
+                    postCounter.incrementAndGet();
+                    throw new BoxAPIException("Conflict", 409, "Conflict");
                 }
+                if (request.getMethod().equals("GET")) {
+                    getCounter.incrementAndGet();
+                }
+                return new BoxJSONResponse() {
+                    @Override
+                    public String getJSON() {
+                        return "{}";
+                    }
+                };
             }
         );
 
@@ -1003,33 +997,24 @@ public class BoxFileTest {
 
         // then
         api.setRequestInterceptor(
-            new RequestInterceptor() {
-                @Override
-                public BoxAPIResponse onRequest(BoxAPIRequest request) {
-                    try {
-                        String query = URLDecoder.decode(request.getUrl().getQuery(), "UTF-8");
-                        assertThat(query, containsString("fields=name,version_number"));
-                        return new BoxJSONResponse() {
-                            @Override
-                            public String getJSON() {
-                                return "{\"entries\": []}";
-                            }
-                        };
-                    } catch (UnsupportedEncodingException e) {
-                        throw new RuntimeException(e);
-                    }
+            request -> {
+                try {
+                    String query = URLDecoder.decode(request.getUrl().getQuery(), "UTF-8");
+                    assertThat(query, containsString("fields=name,version_number"));
+                    return new BoxJSONResponse() {
+                        @Override
+                        public String getJSON() {
+                            return "{\"entries\": []}";
+                        }
+                    };
+                } catch (UnsupportedEncodingException e) {
+                    throw new RuntimeException(e);
                 }
             }
         );
 
         // when
         file.getVersions("name", "version_number");
-    }
-
-    @Test
-    public void name() {
-        BoxFile boxFile = new BoxFile(null, "");
-        boxFile.new Info(new JsonObject());
     }
 
     /**

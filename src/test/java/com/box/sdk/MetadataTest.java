@@ -2,6 +2,8 @@ package com.box.sdk;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
@@ -29,6 +31,7 @@ public class MetadataTest {
         Metadata m1 = new Metadata().add("/foo", "bar");
         Metadata m2 = new Metadata(m1);
         assertEquals("{\"foo\":\"bar\"}", m2.toString());
+        assertEquals(m2.getOperations(), m1.getOperations());
     }
 
     @Test
@@ -207,6 +210,21 @@ public class MetadataTest {
 
         List<String> audiences = this.audiencesAsList(md.getValue("/audiences"));
         assertThat(audiences, contains("internal", "internalEng"));
+    }
+
+    @Test
+    public void getsAllPathsOnly() {
+        Metadata metadata = new Metadata("global", "custom");
+        metadata.add("/path1", "value1");
+        metadata.add("/path2", 123d);
+        metadata.add("/path1/subpath", "value2");
+
+        Metadata propertyPathsOnly = metadata.copyPropertyPathsOnly();
+        assertThat(propertyPathsOnly.getValue("/$scope"), nullValue());
+        assertThat(propertyPathsOnly.getValue("/$template"), nullValue());
+        assertThat(propertyPathsOnly.getString("/path1"), is("value1"));
+        assertThat(propertyPathsOnly.getDouble("/path2"), is(123d));
+        assertThat(propertyPathsOnly.getString("/path1/subpath"), is("value2"));
     }
 
     private List<String> audiencesAsList(JsonValue value) {
