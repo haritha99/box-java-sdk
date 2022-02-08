@@ -70,7 +70,11 @@ dependencies {
         }
         because "v1.57 is compatible with org.bouncycastle:bc-fips:1.0.2.1 which is needed for FIPS compliance purposes"
     }
-    testsCommonImplementation "junit:junit:4.13.2"
+    testsCommonImplementation 'org.junit.platform:junit-platform-launcher:1.8.2'
+    testsCommonImplementation 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
+    testsCommonImplementation 'org.junit.vintage:junit-vintage-engine:5.8.2'
+    testsCommonImplementation 'org.junit.jupiter:junit-jupiter-params:5.8.2'
+//    testsCommonImplementation "junit:junit:4.13.2"
     testsCommonImplementation "org.hamcrest:hamcrest-library:2.2"
     testsCommonImplementation "org.mockito:mockito-core:4.3.1"
     testImplementation "com.github.tomakehurst:wiremock:2.27.2"
@@ -124,6 +128,7 @@ task integrationTest(type: Test) {
     testLogging.showStandardStreams = true
     testClassesDirs = sourceSets.intTest.output.classesDirs
     classpath = sourceSets.intTest.runtimeClasspath
+    useJUnitPlatform()
 }
 
 //TODO: enable JWT tests
@@ -178,10 +183,13 @@ artifacts {
 }
 
 test {
-//    useJUnit {
-//        excludeCategories "com.box.sdk.IntegrationTestJWT"
-//    }
-    useJUnitPlatform()
+    useJUnit {
+        excludeCategories "com.box.sdk.IntegrationTestJWT"
+    }
+    //this will not work unless we replace all @Test annotation with JUnit5
+//    useJUnitPlatform({
+//        excludeTags("IntegrationTestJWT")
+//    })
     testLogging {
         events "passed", "skipped", "failed"
     }

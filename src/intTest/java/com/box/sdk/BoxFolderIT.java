@@ -70,9 +70,11 @@ public class BoxFolderIT {
     public void creatingAndDeletingFolderSucceeds() {
         BoxAPIConnection api = new BoxAPIConnection(TestConfig.getAccessToken());
         BoxFolder rootFolder = getUniqueFolder(api);
+
         BoxFolder childFolder =
             rootFolder.createFolder("[creatingAndDeletingFolderSucceeds] Ĥȅľľő Ƒŕőďő").getResource();
 
+        //then:
         assertThat(rootFolder,
             hasItem(Matchers.<BoxItem.Info>hasProperty("ID", equalTo(childFolder.getID()))));
 

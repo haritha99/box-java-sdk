@@ -96,6 +96,10 @@ public class BoxConfig {
      */
     public static BoxConfig readFrom(Reader reader) throws IOException {
         JsonObject config = JsonObject.readFrom(reader);
+        return readFrom(config);
+    }
+
+    public static BoxConfig readFrom(JsonObject config) {
         JsonObject settings = (JsonObject) config.get("boxAppSettings");
         String clientId = settings.get("clientID").asString();
         String clientSecret = settings.get("clientSecret").asString();
